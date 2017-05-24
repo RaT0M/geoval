@@ -3020,7 +3020,7 @@ class GeoData(object):
         ----------
         d : GeoData object or Data object
         """
-        
+
         for attr, value in self.__dict__.items():
             try:
                 # copy (needed for arrays)
@@ -4546,7 +4546,99 @@ class GeoData(object):
         else:
             return r.data
 
+    def get_climatology_stdev(self, return_object=False, nmin=2,
+                              ensure_start_first=True):
+        """
+        calculate climatological standard deviation for a time increment
+        specified by self.time_cycle
 
+        *Note*: one can not assume that the climatology starts from
+        January if you use a time_cycle = 12
+        Instead, the climatology simply starts with the value which
+        corresponds to the first value of the data.
+
+        Parameters
+        ----------
+        return_object : bool
+            specifies if a Data object shall be returned
+        nmin : int
+            specifies the minimum number of datasets used for
+            climatology; else the result is masked
+        ensure_start_first : bool
+            ensure that the timeseries of the resulting climatology
+            always starts with the first date. If you have e.g.
+            a datasets that starts with dates in March, then also the
+            climatology will start in March. Using this option will
+            ensure that the climatology will then start in January
+        """
+        if hasattr(self, 'time_cycle'):
+            pass
+        else:
+            raise ValueError(
+                'Climatology can not be calculated without a valid time_cycle')
+
+        # generate output fields
+        if self.data.ndim > 1:
+            clim = np.ones(np.shape(self.data[0:self.time_cycle, :])) * np.nan
+            slim = np.ones(np.shape(self.data[0:self.time_cycle, :])) * np.nan
+        else:
+            clim = np.ones(np.shape(self.data[0:self.time_cycle])) * np.nan
+            slim = np.ones(np.shape(self.data[0:self.time_cycle])) * np.nan
+
+        if clim.ndim == 1:
+            for i in range(self.time_cycle):
+                clim[i::self.time_cycle] = self.data[
+                    i::self.time_cycle].std(axis=0)
+                slim[i::self.time_cycle] = self.data[
+                    i::self.time_cycle].sum(axis=0)
+        elif clim.ndim == 2:
+            for i in range(self.time_cycle):
+                clim[i::self.time_cycle, :] = self.data[
+                    i::self.time_cycle, :].std(axis=0)
+                slim[i::self.time_cycle, :] = self.data[
+                    i::self.time_cycle, :].sum(axis=0)
+        elif clim.ndim == 3:
+            for i in range(self.time_cycle):
+                clim[i::self.time_cycle, :, :] = self.data[
+                    i::self.time_cycle, :, :].std(axis=0)
+                slim[i::self.time_cycle, :, :] = self.data[
+                    i::self.time_cycle, :, :].sum(axis=0)
+        else:
+            raise ValueError('Invalid dimension when calculating climatology')
+
+        n = slim / clim
+        clim = np.ma.array(clim,
+                           mask=(np.isnan(clim) | (n < nmin) |
+                                 np.logical_not(
+                                         (np.logical_not(self.data.mask)).
+                                          mean(axis=0))))
+        del slim  # number of data taken into account for climatology
+        del n
+
+        # create a data object
+        r = self.copy()
+        r.label += ' - climatology_stdev'
+        r.varname += '_stdev'
+        r.data = clim
+        r.time = []
+        for i in range(self.time_cycle):
+            r.time.append(self.time[i])  # use data for the first timesteps
+        r.time = np.asarray(r.time)
+        r.adjust_time(year=1200)  # set some arbitrary time
+
+        if len(r.time) != len(r.data):
+            print(len(r.time))
+            print(len(r.data))
+            raise ValueError(
+                'Data and time are inconsistent in get_climatology()')
+
+        if ensure_start_first:
+            r._shift_time_start_firstdate()
+
+        if return_object:
+            return r
+        else:
+            return r.data
 
     def _get_mindate(self, base=None):
         """
