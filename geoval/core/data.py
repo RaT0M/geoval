@@ -43,8 +43,9 @@ from geoval.polygon import Polygon as geovalPolygon
 # external dependencies
 
 from netCDF4 import netcdftime
-# define module functions here as they are defined in different ways in different versions of netcdftime
-# in newer versions of netcdftime, the date2num and num2date functions are part of utime. It is tried
+# define module functions here as they are defined in different ways in
+# different versions of netcdftime in newer versions of netcdftime, the
+# date2num and num2date functions are part of utime. It is tried
 # here to handle newer and older versions
 try:
     xxx = netcdftime.date2num
@@ -115,7 +116,7 @@ class GeoData(object):
         self.weighting_type = kwargs.pop('weighting_type', 'valid')
         self.geometry_file = kwargs.pop('geometry_file', None)
 
-        #/// read data from file ///
+        # /// read data from file ///
         if read:
             self.read(shift_lon, start_time=start_time, stop_time=stop_time,
                       time_var=time_var, checklat=checklat)
@@ -125,14 +126,16 @@ class GeoData(object):
     shape = property(_get_shape)
 
     def _get_date(self):
-        #--- convert to datetime objects ---
-        # use this approach to ensure that a datetime.datetime array is available for further processing
-        # set also timezone as UTC as otherwise comparisons of dates is not possible!
+        # --- convert to datetime objects ---
+        # use this approach to ensure that a datetime.datetime array is
+        # available for further processing set also timezone as UTC as
+        # otherwise comparisons of dates is not possible!
         # CAUTION: assumes that timezone is always UTC !!
 
         try:
             return np.asarray(
-                [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, x.second, 0, pytz.UTC) for x in
+                [datetime.datetime(x.year, x.month, x.day, x.hour, x.minute,
+                                   x.second, 0, pytz.UTC) for x in
                  self.num2date(self.time)])
         # if an exception occurs then write data on screen for bughandling
         except:
@@ -237,7 +240,8 @@ class GeoData(object):
         s : str
             string with warning message
         write_log : bool
-            do actual data loging (default = False to avoid unnecessary generation of log file)
+            do actual data loging (default = False to avoid unnecessary
+            generation of log file)
         """
 
         if not write_log:
@@ -355,13 +359,14 @@ class GeoData(object):
         unittest implemented
         """
 
-        #/// check if output file already there
+        # /// check if output file already there
         if os.path.exists(filename):
             if delete:
                 os.remove(filename)
             else:
                 raise ValueError(
-                    'File already existing. Please delete manually or use DELETE option: %s' % filename)
+                    'File already existing. Please delete manually or '
+                    'use DELETE option: %s' % filename)
 
         if hasattr(self, 'time'):
             if self.time is None:
@@ -385,7 +390,8 @@ class GeoData(object):
             elif self.ndim == 3:
                 for i in range(len(self.time)):
                     F.write(
-                        self._arr2string(self.data[i, :, :], prefix=str(self.date[i])))
+                        self._arr2string(self.data[i, :, :],
+                                         prefix=str(self.date[i])))
             else:
                 raise ValueError('Invalid geometry!')
 
@@ -521,7 +527,8 @@ class GeoData(object):
                 else:
                     print(self.shape)
                     raise ValueError(
-                        'HP filter currently only implemented for 1D data! (A)')
+                        'HP filter currently only implemented for 1D data! (A)'
+                    )
             else:
                 print(self.shape)
                 raise ValueError(
@@ -552,7 +559,8 @@ class GeoData(object):
         else:
             return y
 
-    def partial_correlation(self, Y, Z, ZY=None, pthres=1.01, return_object=True):
+    def partial_correlation(self, Y, Z, ZY=None, pthres=1.01,
+                            return_object=True):
         """
         perform partial correlation analysis.
 
@@ -608,7 +616,8 @@ class GeoData(object):
 
         # calculate partial correlation coefficients
         res = (rxy.data - (rxz.data * rzy.data)) / (
-            np.sqrt(1. - rxz.data * rxz.data) * np.sqrt(1. - rzy.data * rzy.data))
+            np.sqrt(1. - rxz.data * rxz.data) *
+            np.sqrt(1. - rzy.data * rzy.data))
 
         if return_object:
             r = self.copy()
@@ -661,16 +670,18 @@ class GeoData(object):
     def align(self, y, base=None):
         """
         Temporal alignment of two Data objects.
-        The datasets need to have a similar time stepping. The desired timestepping is explicitely specified
-        by the user in the *base* argument. It is obligatory to provide this argument.write
+        The datasets need to have a similar time stepping. The desired
+        timestepping is explicitely specified by the user in the *base*
+        argument. It is obligatory to provide this argument.write
 
         Parameters
         ----------
         y : Data
             Data object that should be aligned with current data
         base : str
-            specifies the temporal basis for the alignment. Data needs to have been preprocessed already with such
-            a time stepping. Currently supported values: ['month','day']
+            specifies the temporal basis for the alignment. Data needs to have
+            been preprocessed already with such a time stepping. Currently
+            supported values: ['month','day']
 
         Returns
         -------
@@ -765,8 +776,10 @@ class GeoData(object):
         if valid:
             return self.cell_area[self.get_valid_mask(frac=frac)].sum()
         else:
-            assert type(
-                self.cell_area) == np.ndarray, 'Only numpy arrays for cell_area supported at the moment for this function'
+            assert type(self.cell_area) == (np.ndarray,
+                                            'Only numpy arrays for cell_area '
+                                            'supported at the moment for this'
+                                            ' function')
             return self.cell_area.sum()
 
     def distance(self, lon_deg, lat_deg, earth_radius=6371.):
@@ -943,18 +956,20 @@ class GeoData(object):
 
     def _set_cell_area(self):
         """
-        set cell area size. If a cell area was already given (either by user or from file)
-        nothing will happen. Otherwise it will be tried to calculate cell_area from
-        coordinates using the CDO's
+        set cell area size. If a cell area was already given (either by user
+        or from file) nothing will happen. Otherwise it will be tried to
+        calculate cell_area from coordinates using the CDO's
         The estimation of the cell area follows the following steps:
         1) try to estimate cellarea using cdo gridarea
         2) if this does not work:
             a) directory is write protected --> write to temporary directory
             b) unknown grid --> try to select another grid, using cdo selgrid
-        3) it could be that the cdo's dont support the input filetype. In that case
-           it is tried to read the lat/lon information using the netCDF4 library
-           store these fields in a dummy nc3 file and then apply the cdo's
-        4) if all this does not work, then cell_area is set to unity for all grid cells and a WARNING is raised
+        3) it could be that the cdo's dont support the input filetype.
+           In that case it is tried to read the lat/lon information using the
+           netCDF4 library store these fields in a dummy nc3 file and then
+           apply the cdo's
+        4) if all this does not work, then cell_area is set to unity for all
+           grid cells and a WARNING is raised
         """
 
         # TODO unittest implementation
@@ -975,7 +990,8 @@ class GeoData(object):
 
         if (self.lat is None) or (self.lon is None):
             self._log_warning(
-                "WARNING: cell area can not be calculated (missing coordinates)!")
+                "WARNING: cell area can not be calculated "
+                "(missing coordinates)!")
             if self.ndim == 2:
                 self.cell_area = np.ones(self.data.shape)
             elif self.ndim == 3:
@@ -995,14 +1011,16 @@ class GeoData(object):
             except:
                 # occurs if you dont have write permissions
                 print(
-                    '   Seems that cell_area file can not be generated, try to generate in temporary directory')
+                    '   Seems that cell_area file can not be generated, '
+                    'try to generate in temporary directory')
                 # generate some temporary filename
                 cell_file = tempfile.mktemp(prefix='cell_area_', suffix='.nc')
                 try:
                     cdo.gridarea(options='-f nc', output=cell_file,
                                  input=self.filename)
                     print(
-                        '   Cell area file generated sucessfully in temporary file: ' + cell_file)
+                        '   Cell area file generated sucessfully in '
+                        'temporary file: ' + cell_file)
                 except:
                     # not sucessfull so far ... last try here by selecting an
                     # alternative grid (if available)
@@ -1015,7 +1033,8 @@ class GeoData(object):
                         cdo.gridarea(options='-f nc', output=cell_file,
                                      input='-selgrid,2 ' + self.filename)
                         print(
-                            '   Cell area file generated sucessfully in temporary file: ' + cell_file)
+                            '   Cell area file generated sucessfully in '
+                            'temporary file: ' + cell_file)
                     except:
                         try:
                             # store lat/lon coordinates in nc3 file and then
@@ -1049,15 +1068,18 @@ class GeoData(object):
             if self.data.ndim == 2:
                 if self.cell_area.shape != self.data.shape:
                     raise ValueError(
-                        'Invalid cell_area file: delete it manually and check again!')
+                        'Invalid cell_area file: '
+                        'delete it manually and check again!')
             elif self.data.ndim == 1:
                 if self.cell_area.shape != self.data.shape:
                     raise ValueError(
-                        'Invalid cell_area file: delete it manually and check again!')
+                        'Invalid cell_area file: '
+                        'delete it manually and check again!')
             elif self.data.ndim == 3:
                 if self.cell_area.shape != self.data[0, :, :].shape:
                     raise ValueError(
-                        'Invalid cell_area file: delete it manually and check again!')
+                        'Invalid cell_area file: '
+                        'delete it manually and check again!')
         else:
             # no cell area calculation possible!!!
             # logger.warning('Can not estimate cell area! (setting all equal) ' + cell_file)
@@ -1083,7 +1105,8 @@ class GeoData(object):
         p : float
             percentile value to obtain, e.g. 0.05 corresponds to 5% percentil
         return_object : bool
-            specifies of a C{Data} object shall be returned [True] or a numpy array [False]
+            specifies of a C{Data} object shall be returned [True] or a
+            numpy array [False]
         Returns
         -------
         r : ndarray, Data
@@ -1160,10 +1183,12 @@ class GeoData(object):
 
         if self.data is None:
             raise ValueError(
-                'The data variable %s in the file %s is not existing. This must not happen!' % (self.varname, self.filename))
+                'The data variable %s in the file %s is not existing. '
+                'This must not happen!' % (self.varname, self.filename))
         if self.scale_factor is None:
             raise ValueError(
-                'The scale_factor for file %s is NONE, this must not happen!' % self.filename)
+                'The scale_factor for file %s is NONE, '
+                'this must not happen!' % self.filename)
 
         # ensure that no Nan values occur
         np.ma.masked_where(np.isnan(self.data), self.data, copy=False)
@@ -1222,7 +1247,8 @@ class GeoData(object):
                         self._latitudecheckok = True
                     else:
                         print(
-                            'WARNING: latitudes not in systematic order! Might cause trouble with zonal statistics!')
+                            'WARNING: latitudes not in systematic order! '
+                            'Might cause trouble with zonal statistics!')
                         self._latitudecheckok = False
 
         # check if cell_area is already existing. if not,
@@ -1240,7 +1266,7 @@ class GeoData(object):
             # no temporal subsetting for 2D data! --> results in invalid
             # results!
             if self.ndim == 3:
-                #- now perform temporal subsetting
+                # - now perform temporal subsetting
                 # BEFORE the conversion to the right time is required!
                 m1, m2 = self._get_time_indices(start_time, stop_time)
                 self._temporal_subsetting(m1, m2)
@@ -1270,7 +1296,7 @@ class GeoData(object):
             h = str(int(h))
             tn = y + '-' + m + '-' + d + ' ' + h + ':' + mi
 
-            #~ print t, h, mi
+            # ~ print t, h, mi
 
             T.append(tn)
         T = np.asarray(T)
@@ -1351,30 +1377,31 @@ class GeoData(object):
         The date is set to the first of January for each year
         """
 
-        #~ assert False, 'This conversion is not thoroughly validated yet!'
+        # ~ assert False, 'This conversion is not thoroughly validated yet!'
         # problem is that due to the gregorian/julian calendar, 10 days are missing
         # that results in a 28 minute shift each day! This is not fixed yet!
 
-        #years = np.asarray(map(int, self.time)).astype('float')
+        # years = np.asarray(map(int, self.time)).astype('float')
         years = np.asarray([int(t) for t in self.time]).astype('float')
         frac = self.time - years
-        #isleap = np.asarray(map(calendar.isleap, years))
+        # isleap = np.asarray(map(calendar.isleap, years))
         isleap = np.asarray([calendar.isleap(y) for y in years])
         ndays = np.ones_like(years) * 365.
         ndays[isleap] = 366.
         days = ndays * frac
-        #~ print self.time[0:5]
-        #~ print years[0:5]
-        #~ print frac[0:5]*100000.
-        #~ print days[0:5]
+        # ~ print self.time[0:5]
+        # ~ print years[0:5]
+        # ~ print frac[0:5]*100000.
+        # ~ print days[0:5]
 
         # fraction is too small ini the end ??? but CDOs do right ???
 
         T = []
         for i in range(len(years)):
 
-            d = datetime.datetime(
-                int(years[i]), 1, 1) + relativedelta.relativedelta(days=days[i])
+            d = (datetime.datetime(
+                int(years[i]), 1, 1) +
+                relativedelta.relativedelta(days=days[i]))
             T.append(d)
 
         self.calendar = 'gregorian'
@@ -1387,7 +1414,8 @@ class GeoData(object):
         try some default names
         """
 
-        assert netcdf_backend is not None, 'ERROR: netcdf backend needs to be specified'
+        assert netcdf_backend is not None, ('ERROR: netcdf backend '
+                                            'needs to be specified')
 
         if self.geometry_file is None:
             filename = self.filename
@@ -1414,7 +1442,9 @@ class GeoData(object):
                 res = res
             else:
                 raise ValueError(
-                    'ERROR: more than one valid geometry field found! Can not handle this. Please provide explicit names for lat/lon fields!')
+                    'ERROR: more than one valid geometry field found! '
+                    'Can not handle this. Please provide explicit names '
+                    'for lat/lon fields!')
 
             return res
 
@@ -1461,10 +1491,12 @@ class GeoData(object):
                     assert False
                 if self.nx != self.lon.shape[1]:
                     raise ValueError(
-                        'ERROR: Geometry of coordinate file inconsistent with data geometry!')
+                        'ERROR: Geometry of coordinate file inconsistent '
+                        'with data geometry!')
                 if self.ny != self.lon.shape[0]:
                     raise ValueError(
-                        'ERROR: Geometry of coordinate file inconsistent with data geometry!')
+                        'ERROR: Geometry of coordinate file inconsistent '
+                        'with data geometry!')
 
         if self.lat is None:
             print('*** WARNING!!! No coordinates available!')
@@ -1493,7 +1525,8 @@ class GeoData(object):
 
         if self.cell_area is None:
             self._log_warning(
-                'WARNING: no cell area given, zonal means are based on equal weighting!')
+                'WARNING: no cell area given, '
+                'zonal means are based on equal weighting!')
             w = np.ones(self.data.shape)
         else:
             w = self._get_weighting_matrix()
@@ -1536,7 +1569,8 @@ class GeoData(object):
         """
         if self.time_str is None:
             raise ValueError(
-                'ERROR: time can not be determined, as units for time not available!')
+                'ERROR: time can not be determined, '
+                'as units for time not available!')
         if not hasattr(self, 'calendar'):
             raise ValueError('ERROR: no calendar specified!')
         if not hasattr(self, 'time'):
@@ -1559,12 +1593,12 @@ class GeoData(object):
             # Therefore implementation here.
             self._convert_monthly_timeseries()
 
-            #--- time conversion using netCDF4 library routine ---
+            # --- time conversion using netCDF4 library routine ---
             # actually nothing needs to be done, as everything shall
             # be handled by self.num2date() in all subsequent subroutines
             # to properly handle difference in different calendars.
-        #~ elif 'years since' in self.time_str:
-            #~ self._convert_yearly_timeseries()
+        # ~ elif 'years since' in self.time_str:
+            # ~ self._convert_yearly_timeseries()
 
     def apply_temporal_subsetting(self, start_date, stop_date):
         """
@@ -1612,7 +1646,8 @@ class GeoData(object):
             # time!)
             if self.squeezed:
                 print(
-                    'Data was already squeezed: no temporal subsetting is performed!')
+                    'Data was already squeezed: '
+                    'no temporal subsetting is performed!')
             else:
                 self.data = self.data[i1:i2, :]
         elif self.data.ndim == 1:  # single temporal vector assumed
@@ -1639,7 +1674,8 @@ class GeoData(object):
             # if no timezone, then set it
             if d.tzinfo is None:
                 t = datetime.datetime(
-                    d.year, d.month, d.day, d.hour, d.minute, d.second, d.microsecond, pytz.UTC)
+                    d.year, d.month, d.day, d.hour, d.minute, d.second,
+                    d.microsecond, pytz.UTC)
                 return t
             else:
                 return d
@@ -1663,7 +1699,7 @@ class GeoData(object):
         s1 = self.date2num(start)
         s2 = self.date2num(stop)
 
-        #- check that time is increasing only
+        # - check that time is increasing only
         if any(np.diff(self.time)) < 0.:
             raise ValueError('Error _get_time_indices: Time is not increasing')
 
@@ -1695,7 +1731,8 @@ class GeoData(object):
 
     def _get_days_per_month(self):
         """ get number of days for each month """
-        return np.asarray([calendar.monthrange(x.year, x.month)[1] for x in self.date])
+        return np.asarray([calendar.monthrange(x.year, x.month)[1]
+                           for x in self.date])
 
     def _mesh_lat_lon(self):
         """
@@ -1716,8 +1753,8 @@ class GeoData(object):
         varname : str
             name of variable to be read
         filename : str
-            specifies the name of the file to read. If this is not provided, then
-            self.filename is used
+            specifies the name of the file to read. If this is not provided,
+            then self.filename is used
         """
 
         if filename is None:
@@ -1729,7 +1766,8 @@ class GeoData(object):
         print('Reading file %s' % filename)
         if not varname in File.get_variable_keys():
             self._log_warning(
-                'WARNING: data can not be read. Variable not existing! ', varname)
+                'WARNING: data can not be read. '
+                'Variable not existing! ', varname)
             print('VARNAME: ', varname)
             print('EXISTING VARS: ', File.get_variable_keys())
             File.close()
@@ -1747,7 +1785,8 @@ class GeoData(object):
             if self.level is None:
                 print(data.shape)
                 raise ValueError(
-                    '4-dimensional variables not supported yet! Either remove a dimension or specify a level!')
+                    '4-dimensional variables not supported yet! '
+                    'Either remove a dimension or specify a level!')
             else:
                 # [time,level,ny,nx ] --> [time,ny,nx]
                 data = data[:, self.level, :, :]
@@ -1765,8 +1804,10 @@ class GeoData(object):
             msk = data == self.fill_value
             # set to nan, as otherwise problems with masked and scaled data
             data[msk] = np.nan
+            # generate an empty mask first to ensure that the mask has
+            # the same geometry as the data!
             data = np.ma.array(data, mask=np.zeros(data.shape).astype(
-                'bool'))  # generate an empty mask first to ensure that the mask has the same geometry as the data!
+                'bool'))
             data.mask[np.isnan(data)] = True
         else:
             data = np.ma.array(data, mask=np.zeros(data.shape).astype('bool'))
@@ -1828,7 +1869,8 @@ class GeoData(object):
             specifies if a C{Data} object shall be returned [True]
             or if a numpy array shall be returned [False]
         pthres : float
-            specifies significance threshold; all values above this threshold will be masked
+            specifies significance threshold; all values above this threshold
+            will be masked
         Returns
         -------
         The following variables are returned:
@@ -1862,7 +1904,8 @@ class GeoData(object):
         Parameters
         ----------
         return_object : bool
-            specifies if a C{Data} object shall be returned [True]; else a numpy array is returned
+            specifies if a C{Data} object shall be returned [True];
+            else a numpy array is returned
         """
         if self.data.ndim == 3:
             res = self.data.mean(axis=0)
@@ -1871,7 +1914,8 @@ class GeoData(object):
         else:
             print(self.data.ndim)
             raise ValueError(
-                'Temporal mean can not be calculated as dimensions do not match!')
+                'Temporal mean can not be calculated as dimensions '
+                'do not match!')
 
         if return_object:
             tmp = self.copy()
@@ -1926,7 +1970,8 @@ class GeoData(object):
             pass
         else:
             raise ValueError(
-                'Temporal sum can not be calculated as dimensions do not match!')
+                'Temporal sum can not be calculated as '
+                'dimensions do not match!')
         res = self.data.sum(axis=0)
         if return_object:
             if res is None:
@@ -1980,7 +2025,8 @@ class GeoData(object):
             res = None
         else:
             raise ValueError(
-                'Temporal standard deviation can not be calculated as dimensions do not match!')
+                'Temporal standard deviation can not be calculated as '
+                'dimensions do not match!')
 
         if return_object:
             if res is None:
@@ -2001,7 +2047,8 @@ class GeoData(object):
         Parameters
         ----------
         return_object : bool
-            specifies if a C{Data} object shall be returned [True]; else a numpy array is returned
+            specifies if a C{Data} object shall be returned [True];
+            else a numpy array is returned
         """
 
         if self.data.ndim == 3:
@@ -2012,7 +2059,8 @@ class GeoData(object):
         else:
             print(self.data.ndim)
             raise ValueError(
-                'Temporal minimum can not be calculated as dimensions do not match!')
+                'Temporal minimum can not be calculated as '
+                'dimensions do not match!')
 
         if return_object:
             tmp = self.copy()
@@ -2030,7 +2078,8 @@ class GeoData(object):
         Parameters
         ----------
         return_object : bool
-            specifies if a C{Data} object shall be returned [True]; else a numpy array is returned
+            specifies if a C{Data} object shall be returned [True];
+            else a numpy array is returned
         """
         if self.data.ndim == 3:
             res = self.data.max(axis=0)
@@ -2040,7 +2089,8 @@ class GeoData(object):
         else:
             print(self.data.ndim)
             raise ValueError(
-                'Temporal maximum can not be calculated as dimensions do not match!')
+                'Temporal maximum can not be calculated as '
+                'dimensions do not match!')
 
         if return_object:
             tmp = self.copy()
@@ -2058,7 +2108,8 @@ class GeoData(object):
         Parameters
         ----------
         return_object : bool
-            specifies if a C{Data} object shall be returned [True]; else a numpy array is returned
+            specifies if a C{Data} object shall be returned [True];
+            else a numpy array is returned
 
         Test
         ----
@@ -2084,13 +2135,14 @@ class GeoData(object):
 
         A typical application of this function would be for climatological mean
         values. If one calculates a climatology using the cdo ymonmean command,
-        it is *not* guarantued that the data is actually in ascending order, namely, that
-        January is the first dataset. The reason is, that the cdo's start with the dataset
-        of the first month!
+        it is *not* guarantued that the data is actually in ascending order,
+        namely, that January is the first dataset. The reason is, that the
+        cdo's start with the dataset of the first month!
 
         by using timsort() one can ensure a proper sequence of the data.
-        In case of a climatology, it is recommended that you first set the day and year to a common
-        date to get in the end a sorting of the months. An example would look like
+        In case of a climatology, it is recommended that you first set the day
+        and year to a common date to get in the end a sorting of the months.
+        An example would look like
 
         self.adjust_time(day=15,year=2000) #sets year to a dummy = 2000 and day = 15
         self.timsort() #results in a sorted climatology
@@ -2314,9 +2366,9 @@ class GeoData(object):
 
     def fldmean(self, return_data=True, apply_weights=True):
         """
-        calculate mean of the spatial field for each time using weighted averaging
-        results are exactly the same as one would obtain with the similar
-        cdo function
+        calculate mean of the spatial field for each time using weighted
+        averaging results are exactly the same as one would obtain with the
+        similar cdo function
         Parameters
         ----------
         return_data : bool
@@ -2421,12 +2473,13 @@ class GeoData(object):
             raise ValueError('ddof only supported for [0,1] so far!')
         if ddof == 1:
             raise ValueError(
-                'Sorry, but for DDOF=1 there are still problems for weighted samples. Please check unittests first.')
+                'Sorry, but for DDOF=1 there are still problems '
+                'for weighted samples. Please check unittests first.')
 
         if apply_weights:
             # calculate weighted standard deviation.
             # http://en.wikipedia.org/wiki/Mean_square_weighted_deviation
-            #(adapted from http://stackoverflow.com/questions/2413522/weighted-standard-deviation-in-numpy)
+            # (adapted from http://stackoverflow.com/questions/2413522/weighted-standard-deviation-in-numpy)
 
             # in general it is assumed that the weights are normalized,
             # thus that sum(w) = 1., but the routine below is coded
@@ -2640,7 +2693,8 @@ class GeoData(object):
             'one': at least a single dataset needs to be valid
             'thres' : number of valid timesteps needs to be abovt a threshold
         thres : int
-            threshold for minimum number of valid values (needed when mode=='thres')
+            threshold for minimum number of valid values
+            (needed when mode=='thres')
         """
 
         if mode == 'thres':
@@ -2702,7 +2756,8 @@ class GeoData(object):
         else:
             return lon, lat, data
 
-    def _save_netcdf(self, filename, varname=None, delete=False, compress=True, format='NETCDF4'):
+    def _save_netcdf(self, filename, varname=None, delete=False, compress=True,
+                     format='NETCDF4'):
         """
         saves the data object to a netCDF file
 
@@ -2789,7 +2844,7 @@ class GeoData(object):
             if hasattr(self, 'cell_area'):
                 File.create_variable('cell_area', 'd', ('ny', 'nx'))
 
-        #/// write data
+        # /// write data
         if hasattr(self, 'time'):
             if self.time is not None:
                 File.assign_value('time', self.time)
@@ -2824,7 +2879,8 @@ class GeoData(object):
 
     def normalize(self, return_object=True):
         """
-        normalize data by removing the mean and dividing by the standard deviation
+        normalize data by removing the mean and dividing by the
+        standard deviation
         normalization is done for each grid cell
 
         Parameters
@@ -3299,16 +3355,16 @@ class GeoData(object):
         print('Calculating correlation ...')
         if method == 'pearson':
             res = [stats.mstats.linregress(x, dat[:, i]) for i in range(n)]
-            #~ res = np.ones(n)*np.nan
-            #~ for i in xrange(n):
-            #~ try:
-            #~ yy = stats.mstats.linregress(x, dat[:, i])
-
-            #res[i] = stats.mstats.linregress(x, dat[:, i])
-            #~ except:
-            #~ print x
-            #~ print dat[:,i]
-            #~ stop
+            # ~ res = np.ones(n)*np.nan
+            # ~ for i in xrange(n):
+            # ~ try:
+            # ~ yy = stats.mstats.linregress(x, dat[:, i])
+            #
+            # res[i] = stats.mstats.linregress(x, dat[:, i])
+            # ~ except:
+            # ~ print x
+            # ~ print dat[:,i]
+            # ~ stop
 
             res = np.asarray(res)
             slope = res[:, 0]
@@ -3321,11 +3377,11 @@ class GeoData(object):
             res = np.ones((n, 5)) * np.nan
 
             # better implementation
-            #~ if n < 3: not so easy, as 'n' is the total number of points ???
-            #~ set results as invalid
-            #~ else:
-            #~ res = [stats.mstats.spearmanr(x, dat[:, i]) for i in xrange(n)]
-            #~ ...
+            # ~ if n < 3: not so easy, as 'n' is the total number of points ???
+            # ~ set results as invalid
+            # ~ else:
+            # ~ res = [stats.mstats.spearmanr(x, dat[:, i]) for i in xrange(n)]
+            # ~ ...
 
             # this is implemented like this at the moment, as the number of
             # valid data points needs to be > 3
@@ -3365,11 +3421,11 @@ class GeoData(object):
         I.shape = (ny, nx)
         S.shape = (ny, nx)
 
-        #--- prepare output data objects
+        # --- prepare output data objects
         Rout = self.copy()  # copy object to get coordinates
         Rout.label = 'correlation'
         msk = (P > pthres) | (np.isnan(R))
-        #msk = np.zeros_like(R).astype('bool')
+        # msk = np.zeros_like(R).astype('bool')
         Rout.data = np.ma.array(R, mask=msk).copy()
         Rout.unit = '-'
 
@@ -3462,7 +3518,8 @@ class GeoData(object):
         """
         return np.all(np.diff(self.time) >= 0.)
 
-    def mask_region(self, r, return_object=True, method='full', maskfile=None, force=False):
+    def mask_region(self, r, return_object=True, method='full', maskfile=None,
+                    force=False):
         """
         Given a Region object, mask all the data which is outside of the region
 
@@ -3481,7 +3538,8 @@ class GeoData(object):
             filename of maskfile
             if provided, then the generated mask is stored in a file specified
             by maskfile. In case that this file is already existing, no raster
-            will be generated, but the mask will be read from file. Only exception is if
+            will be generated, but the mask will be read from file.
+            Only exception is if
             force=True
             The filename needs to have the '.nc' extension!
         force : bool
@@ -3570,7 +3628,8 @@ class GeoData(object):
 
         # check if timezone information available. If not, then
         # set to UTC as default
-        d = np.asarray([datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, x.second, 0, pytz.UTC)
+        d = np.asarray([datetime.datetime(x.year, x.month, x.day, x.hour,
+                                          x.minute, x.second, 0, pytz.UTC)
                         for x in d])
 
         if method not in ['linear']:
@@ -3583,10 +3642,12 @@ class GeoData(object):
                 'Interpolation currently only supported for 3D arrays!')
         if not np.all(np.diff(self.date2num(d)) > 0):
             raise ValueError(
-                'Input time array is not in ascending order! This must not happen! Please ensure ascending order')
+                'Input time array is not in ascending order! '
+                'This must not happen! Please ensure ascending order')
         if not np.all(np.diff(self.time) > 0):
             raise ValueError(
-                'Time array of data is not in ascending order! This must not happen! Please ensure ascending order')
+                'Time array of data is not in ascending order! '
+                'This must not happen! Please ensure ascending order')
 
         nt0, ny, nx = self.shape  # original dimensions
         nt = len(d)  # target length of reference time
@@ -3603,14 +3664,16 @@ class GeoData(object):
         if self.date.max() < d.min():
             print(self.date.max(), d.min())
             print(
-                'WARNING: specified time period is BEFORE any data availability. NO INTERPOLATION CAN BE DONE!')
+                'WARNING: specified time period is BEFORE any '
+                'data availability. NO INTERPOLATION CAN BE DONE!')
             f_err = True
 
         # B) all data is AFTER desired period
         if self.date.min() > d.max():
             print(self.date.min(), d.max())
             print(
-                'WARNING: specified time period is AFTER any data availability. NO INTERPOLATION CAN BE DONE!')
+                'WARNING: specified time period is AFTER any '
+                'data availability. NO INTERPOLATION CAN BE DONE!')
             f_err = True
 
         if f_err:
@@ -3664,20 +3727,20 @@ class GeoData(object):
             if i2 > nt0 - 1:
                 break
 
-            #... here we have valid data
+            # ... here we have valid data
             t1 = self.date2num(self.date[i1])
             t2 = self.date2num(self.date[i2])
 
             W[i, i1] = (t2 - self.date2num(d[i])) / (t2 - t1)
             W[i, i2] = 1. - W[i, i1]
 
-            #... now increment if needed
+            # ... now increment if needed
             if i < (nt0 - 1):
                 if t2 < self.date2num(d[i + 1]):
                     i1 += 1
                     i2 += 1
 
-        #/// generate interpolation Matrix and perform interpolation
+        # /// generate interpolation Matrix and perform interpolation
         # could become a problem for really large matrices!
         N = np.ma.dot(W, X)
         # avoid boundary problem (todo: where is the problem coming from ??)
@@ -3857,8 +3920,8 @@ class GeoData(object):
     def _shift_time_start_firstdate(self):
         """
         shift dataset that the timeseries is ensured to be in ascending order
-        usefull e.g. if you have a climatology and this does not start with January
-        and you want to shift it automatically
+        usefull e.g. if you have a climatology and this does not start with
+        January and you want to shift it automatically
         """
 
         # search for point in timeseries where break occurs
@@ -3870,7 +3933,8 @@ class GeoData(object):
             n = m.argmax() + 1  # position where the break in timeseries occurs
         else:
             raise ValueError(
-                'More than a single breakpoint found. Can not process this data as it is not in cyclic ascending order')
+                'More than a single breakpoint found. Can not process '
+                'this data as it is not in cyclic ascending order')
 
         # shift data now
         self.timeshift(n, shift_time=True)
@@ -3908,7 +3972,8 @@ class GeoData(object):
                     clim = self._climatology_raw
                 else:
                     raise ValueError(
-                        'Climatology can not be calculated because of missing time_cycle!')
+                        'Climatology can not be calculated because of '
+                        'missing time_cycle!')
         else:
             raise ValueError('Anomalies can not be calculated, invalid BASE')
 
@@ -3946,8 +4011,9 @@ class GeoData(object):
         """
         Conditional statistics of data
 
-        This routine calculates conditions statistics over the current data. Given a mask M, the routine calculates for
-        each unique value in M the mean, stdv, min and max from the current data
+        This routine calculates conditions statistics over the current data.
+        Given a mask M, the routine calculates for each unique value in M the
+        mean, stdv, min and max from the current data
 
         Parameters
         ----------
@@ -3957,8 +4023,8 @@ class GeoData(object):
         Returns
         -------
         res : dict
-            dictionary with results where each entry has shape (nt,nvals) with nvals beeing the number of
-            unique ID values in the mask
+            dictionary with results where each entry has shape (nt,nvals) with
+            nvals beeing the number of unique ID values in the mask
             res = {'id': vals, 'mean': means, 'sum': sums, 'min': mins, 'max': maxs, 'std': stds}
 
         Example
@@ -4028,8 +4094,9 @@ class GeoData(object):
             maxs = np.ones((1, len(vals))) * np.nan
 
             for i in range(len(vals)):
-                means[0, i], stds[0, i], sums[0, i], mins[0,
-                                                          i], maxs[0, i] = _get_stat(self.data, m, vals[i])
+                (means[0, i], stds[0, i],
+                 sums[0, i], mins[0, i],
+                 maxs[0, i]) = _get_stat(self.data, m, vals[i])
 
         elif self.data.ndim == 3:
             nt = len(self.data)
@@ -4042,9 +4109,9 @@ class GeoData(object):
             # calculate for each timestep and value the conditional statistic
             for t in range(nt):
                 for i in range(len(vals)):
-                    means[t, i], stds[t, i], sums[t, i], mins[t, i], maxs[t, i] = _get_stat(
-                        self.data[t, :, :],
-                        m, vals[i])
+                    (means[t, i], stds[t, i], sums[t, i],
+                     mins[t, i], maxs[t, i]) = _get_stat(self.data[t, :, :],
+                                                         m, vals[i])
         else:
             raise ValueError('Invalid geometry!')
 
@@ -4060,7 +4127,8 @@ class GeoData(object):
         for i in range(len(vals)):
             id = vals[i]
             res.update(
-                {id: {'mean': means[:, i], 'std': stds[:, i], 'sum': sums[:, i], 'min': mins[:, i],
+                {id: {'mean': means[:, i], 'std': stds[:, i],
+                      'sum': sums[:, i], 'min': mins[:, i],
                       'max': maxs[:, i], 'time': thedate}})
         if len(res) == 0:
             return None
@@ -4125,7 +4193,7 @@ class GeoData(object):
 
         tmp = np.ma.array(tmp, mask=tmp != tmp)
 
-        #////
+        # ////
         if return_data:  # return data object
             if self.data.ndim == 3:
                 x = np.zeros((len(tmp), 1, 1))
@@ -4208,7 +4276,8 @@ class GeoData(object):
             D.data = D.data[i1:i2 + 1, j1:j2 + 1]
         else:
             raise ValueError(
-                'Cutting of bounding box not implemented for data other than 2D/3D!')
+                'Cutting of bounding box not implemented for data '
+                'other than 2D/3D!')
         if hasattr(self, 'lat'):
             if D.lat is not None:
                 D.lat = D.lat[i1:i2 + 1, j1:j2 + 1]
@@ -4257,7 +4326,8 @@ class GeoData(object):
         ----
         * more efficient implementation
         * slope calculation as well?
-        * todo: significance correct ??? -- not if stats.mstats.linregress would be used!!!!
+        * todo: significance correct ???
+                -- not if stats.mstats.linregress would be used!!!!
 
         """
 
@@ -4357,7 +4427,8 @@ class GeoData(object):
 
         return RO, PO
 
-    def get_climatology(self, return_object=False, nmin=1, ensure_start_first=True):
+    def get_climatology(self, return_object=False, nmin=1,
+                        ensure_start_first=True):
         """
         calculate climatological mean for a time increment
         specified by self.time_cycle
@@ -4596,8 +4667,10 @@ class GeoData(object):
         if base is None:
             rval = dmax
         elif base == 'month':
-            rval = datetime.datetime(dmax.year, dmax.month,
-                                     calendar.monthrange(dmax.year, dmax.month)[1], 23, 59, 59, 0, dmax.tzinfo)
+            rval = datetime.datetime(
+                dmax.year, dmax.month,
+                calendar.monthrange(dmax.year, dmax.month)[1],
+                23, 59, 59, 0, dmax.tzinfo)
         elif base == 'day':
             rval = datetime.datetime(
                 dmax.year, dmax.month, dmax.day, 23, 59, 59, 0, dmax.tzinfo)
@@ -4610,7 +4683,8 @@ class GeoData(object):
 
     def _days_per_month(self):
         """return the number of days per month in Data timeseries (unittest)"""
-        return [float(calendar.monthrange(d.year, d.month)[1]) for d in self.date]
+        return [float(calendar.monthrange(d.year, d.month)[1])
+                for d in self.date]
 
     def detrend(self, return_object=True):
         """
@@ -4641,7 +4715,8 @@ class GeoData(object):
 
         # generate dummy vector for linear correlation (assumes equally spaced
         # data!!!!!) todo: generate unittest for this
-        # @todo: replace this by using actual timestamp for regression calcuclation
+        # @todo: replace this by using actual timestamp for
+        # regression calcuclation
         x = np.arange(len(self.time))
         x = np.ma.array(x, mask=x != x)
 
@@ -4720,7 +4795,8 @@ class GeoData(object):
             if ny is None:
                 if nx is not None:
                     raise ValueError(
-                        'When only timeseries is provided, then nx and ny need to be None!')
+                        'When only timeseries is provided, '
+                        'then nx and ny need to be None!')
                 else:
                     data = np.random.random(nt)
             else:
@@ -4780,7 +4856,8 @@ class GeoData(object):
 
         if mean and timmean:
             raise ValueError(
-                'Only the MEAN or the TIMMEAN option can be given, but not together!')
+                'Only the MEAN or the TIMMEAN option can be given, '
+                'but not together!')
 
         # either store full field or just spatial mean field
         if mean:
@@ -4819,45 +4896,45 @@ class GeoData(object):
         # self.time = plt.date2num(newtime) + 1.
         self.time = self.date2num(newtime)
 
-    #~ def _convert_yearly_timeseries(self):
-        #~ """
-        #~ comnvert yearly timeseries, as the YEARS SINCE option
-        #~ is not supported yet by the netCDF4 time functions
-#~
-        #~ Caution needs to be taken for choosing the right calendars
-        #~ due to 10 missing days (1582-10-05 ... 1582-10-14) in the mixed
-        #~ gregorian/julian calendar
-        #~ """
-        #~ assert 'years since' in self.time_str
-        #~ basestr = self.time_str.split('since')[1].lstrip()
-        #~ fmt =  '%Y-%m-%d %H:%M:%S'
-        #~ basedate = datetime.datetime.strptime(basestr, fmt)  # datetime object
-        #~ newtime = []
-        #~ for i in xrange(len(self.time)):
-        #~ Y,M,D,h,m,s = self._split_time_float(self.time[i])
-        #~ newdate.append(basedate + relativedelta.relativedelta(years=Y,months=M,days=D,hours=h,minutes=m,seconds=s))
-#~
-        #~ self.calendar = 'standard'
-        #~ self.time_str = 'days since 0001-01-01 00:00:00'
-        #~ self.time = self.date2num(newtime)
-
-    #~ def _split_time_float(self, t):
-        #~ """
-        #~ given a float number that should represent year/fractions
-        #~ this routine is supposed to return the years/months/days/hours/minutes/seconds
-#~
-        #~ Parameters
-        #~ ----------
-        #~ t : float
-        #~ scalar time indicator
-        #~ """
-        #~ Y = int(t)
-        #~ M = 0
-        #~ D = 0
-        #~ h = 0
-        #~ m = 0
-        #~ s = 0
-        #~ return Y,M,D,h,m,s
+#     ~ def _convert_yearly_timeseries(self):
+#         ~ """
+#         ~ comnvert yearly timeseries, as the YEARS SINCE option
+#         ~ is not supported yet by the netCDF4 time functions
+# ~
+#         ~ Caution needs to be taken for choosing the right calendars
+#         ~ due to 10 missing days (1582-10-05 ... 1582-10-14) in the mixed
+#         ~ gregorian/julian calendar
+#         ~ """
+#         ~ assert 'years since' in self.time_str
+#         ~ basestr = self.time_str.split('since')[1].lstrip()
+#         ~ fmt =  '%Y-%m-%d %H:%M:%S'
+#         ~ basedate = datetime.datetime.strptime(basestr, fmt)  # datetime object
+#         ~ newtime = []
+#         ~ for i in xrange(len(self.time)):
+#         ~ Y,M,D,h,m,s = self._split_time_float(self.time[i])
+#         ~ newdate.append(basedate + relativedelta.relativedelta(years=Y,months=M,days=D,hours=h,minutes=m,seconds=s))
+# ~
+#         ~ self.calendar = 'standard'
+#         ~ self.time_str = 'days since 0001-01-01 00:00:00'
+#         ~ self.time = self.date2num(newtime)
+#
+#     ~ def _split_time_float(self, t):
+#         ~ """
+#         ~ given a float number that should represent year/fractions
+#         ~ this routine is supposed to return the years/months/days/hours/minutes/seconds
+# ~
+#         ~ Parameters
+#         ~ ----------
+#         ~ t : float
+#         ~ scalar time indicator
+#         ~ """
+#         ~ Y = int(t)
+#         ~ M = 0
+#         ~ D = 0
+#         ~ h = 0
+#         ~ m = 0
+#         ~ s = 0
+#         ~ return Y,M,D,h,m,s
 
     # written before geoval was implemented
     def get_shape_statistics(self, regions):
@@ -4882,7 +4959,8 @@ class GeoData(object):
 
     def get_regions(self, shape, column=0):  # written before geoval was implemented
         """
-        get setup for statistical information for different polygons in shapefile
+        get setup for statistical information for different polygons
+        in shapefile
         caution: slow for complex polygons
         Parameters
         ----------
@@ -4922,12 +5000,16 @@ class GeoData(object):
                 loc_mask = self.data.mask.copy()
             else:
                 assert False, "wrong data dimensions"
-            for i in np.arange(self.shape[0] if len(self.shape) == 2 else self.shape[1]):
-                for j in np.arange(self.shape[1] if len(self.shape) == 2 else self.shape[2]):
+            for i in np.arange(self.shape[0]
+                               if len(self.shape) == 2
+                               else self.shape[1]):
+                for j in np.arange(self.shape[1]
+                                   if len(self.shape) == 2
+                                   else self.shape[2]):
                     ll = [self.lon[i, j] if self.lon[i, j] <
                           180 else self.lon[i, j] - 180, self.lat[i, j]]
-                    loc_mask[i, j] = loc_mask[i,
-                                              j] and not point_in_poly(ll, loc_poly)
+                    loc_mask[i, j] = (loc_mask[i, j] and not
+                                      point_in_poly(ll, loc_poly))
 
             regions[regname[s]] = loc_mask
 
