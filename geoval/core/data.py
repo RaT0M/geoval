@@ -777,9 +777,9 @@ class GeoData(object):
             return self.cell_area[self.get_valid_mask(frac=frac)].sum()
         else:
             assert type(self.cell_area) == (np.ndarray,
-                                            'Only numpy arrays for cell_area '
-                                            'supported at the moment for this'
-                                            ' function')
+                                            ('Only numpy arrays for cell_area '
+                                             'supported at the moment for this'
+                                             ' function'))
             return self.cell_area.sum()
 
     def distance(self, lon_deg, lat_deg, earth_radius=6371.):

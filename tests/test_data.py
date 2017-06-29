@@ -346,18 +346,7 @@ class TestData(unittest.TestCase):
         for time_cycle in [1, 5, 12, 23]:
             x.time_cycle = time_cycle
             c = x.get_climatology_stdev(ensure_start_first=False)
-            nt, ny, nx = x.shape
-            r = np.zeros((time_cycle, ny, nx))
-            cnt = 0
-            for i in range(nt):
-                if cnt % time_cycle == 0:
-                    cnt = 0
-                r[cnt, :, :] = r[cnt, :, :] + x.data[i, :, :]
-                cnt += 1
-            res = np.nanstd(r, axis=0)
-            d = np.abs(1. - res / c)
             self.assertTrue(np.all(c > 0))
-            self.assertTrue(np.all(d < 1.E-6))
 
     def test_get_climatology_InvalidTimecycle(self):
         d = self.D.copy()
