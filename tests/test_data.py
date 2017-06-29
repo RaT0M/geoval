@@ -329,15 +329,17 @@ class TestData(unittest.TestCase):
 
         # timecycle = 1
         x.time_cycle = 1
-        r = x.data.mean(axis=0)
+        r = x.data.std(axis=0)
         c = x.get_climatology_stdev()
         d = np.abs(1. - r / c)
+        self.assertTrue(np.all(c > 0))
         self.assertTrue(np.all(d < 1.E-6))
 
         # ... same, but with object returned
         c = x.get_climatology_stdev(
             return_object=True, ensure_start_first=False)
         d = np.abs(1. - r / c.data)
+        self.assertTrue(np.all(c > 0))
         self.assertTrue(np.all(d < 1.E-6))
 
         # varying timecycles
@@ -357,6 +359,7 @@ class TestData(unittest.TestCase):
                 cnt += 1
             res = r / n  # reference mean
             d = np.abs(1. - res / c)
+            self.assertTrue(np.all(c > 0))
             self.assertTrue(np.all(d < 1.E-6))
 
     def test_get_climatology_InvalidTimecycle(self):
