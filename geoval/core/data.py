@@ -62,6 +62,7 @@ except:
 
 from cdo import Cdo
 
+
 class GeoData(object):
 
     """
@@ -71,12 +72,12 @@ class GeoData(object):
     def __init__(self, filename, varname, **kwargs):
         self.filename = filename
         self.varname = varname
-        read=kwargs.pop('read', False)
-        start_time=kwargs.pop('start_time', None)
-        stop_time=kwargs.pop('stop_time', None)
-        time_var=kwargs.pop('time_var', 'time')
-        checklat=kwargs.pop('checklat', True)
-        shift_lon=kwargs.pop('shift_lon', False)
+        read = kwargs.pop('read', False)
+        start_time = kwargs.pop('start_time', None)
+        stop_time = kwargs.pop('stop_time', None)
+        time_var = kwargs.pop('time_var', 'time')
+        checklat = kwargs.pop('checklat', True)
+        shift_lon = kwargs.pop('shift_lon', False)
 
         self.cell_area = kwargs.pop('cell_area', None)  # [m**2]
         self.scale_factor = kwargs.pop('scale_factor', 1.)
@@ -87,17 +88,14 @@ class GeoData(object):
         self.lat_name = kwargs.pop('lat_name', None)
         self.lon_name = kwargs.pop('lon_name', None)
 
-        time_cycle=kwargs.pop('time_cycle', None)
+        time_cycle = kwargs.pop('time_cycle', None)
 
         self.inmask = kwargs.pop('mask', None)
 
         self._calc_cell_area = kwargs.pop('calc_cell_area', True)
 
-
         if time_cycle is not None:
             self.time_cycle = time_cycle
-
-
 
         label = kwargs.pop('label', None)
         unit = kwargs.pop('unit', None)
@@ -117,13 +115,10 @@ class GeoData(object):
         self.weighting_type = kwargs.pop('weighting_type', 'valid')
         self.geometry_file = kwargs.pop('geometry_file', None)
 
-
-
         #/// read data from file ///
         if read:
             self.read(shift_lon, start_time=start_time, stop_time=stop_time,
                       time_var=time_var, checklat=checklat)
-
 
     def _get_shape(self):
         return self.data.shape
@@ -151,7 +146,8 @@ class GeoData(object):
                     x.year, x.month, x.day, x.hour, x.minute, x.second, 0,
                     pytz.UTC))
             raise ValueError(
-                'Some error in time conversion happened! Look in dump.pkl to fix it')
+                'Some error in time conversion happened! Look in dump.pkl'
+                'to fix it')
     date = property(_get_date)
 
     def _get_data_min(self):
@@ -233,10 +229,6 @@ class GeoData(object):
             else:
                 return res
 
-
-
-
-
     def _log_warning(self, s, write_log=False):
         """
         log warnings for class in a logfile
@@ -274,7 +266,6 @@ class GeoData(object):
 
         f.write(filename + '\t' + s + '\n')
         f.close()
-
 
     def num2date(self, t):
         """
@@ -343,8 +334,6 @@ class GeoData(object):
             return self._netcdftime_date2num(t, self.time_str,
                                              calendar=self.calendar) - offset
 
-
-
     def _save_ascii(self, filename, varname=None, delete=False):
         """
         saves the data object to an ASCII file as follows
@@ -402,8 +391,6 @@ class GeoData(object):
 
         F.close()
 
-
-
     def _get_center_position(self):
         """
         returns indices of center position in data array
@@ -429,8 +416,6 @@ class GeoData(object):
             jpos = (self.nx - 1) / 2  # note that in python3 this is a decimal!
 
         return int(ipos), int(jpos)
-
-
 
     def _arr2string(self, a, prefix='', sep='\t'):
         """
@@ -473,7 +458,6 @@ class GeoData(object):
 
         return s
 
-
     def _squeeze(self):
         """
         remove singletone dimensions in data variable
@@ -481,8 +465,6 @@ class GeoData(object):
         if self.data.ndim > 2:
             self.data = self.data.squeeze()
             self.squeezed = True
-
-
 
     def hp_filter(self, lam, return_object=True):
         """
@@ -570,9 +552,6 @@ class GeoData(object):
         else:
             return y
 
-
-
-
     def partial_correlation(self, Y, Z, ZY=None, pthres=1.01, return_object=True):
         """
         perform partial correlation analysis.
@@ -641,8 +620,6 @@ class GeoData(object):
         else:
             return res
 
-
-
     def _get_date_from_month(self, nmonths):
         """
         calculate a datetime object for a time given in 'months since'
@@ -680,9 +657,6 @@ class GeoData(object):
             act_date += ndays
 
         return plt.num2date(act_date)
-
-
-
 
     def align(self, y, base=None):
         """
@@ -726,7 +700,7 @@ class GeoData(object):
                 raise ValueError('Dataset Y is not monthly data!')
         elif base == 'day':
             if not x._is_daily():
-                print( x.date)
+                print(x.date)
                 raise ValueError('Dataset X is not daily data!')
             if not y._is_daily():
                 print(y.date)
@@ -772,9 +746,6 @@ class GeoData(object):
 
         return x, y
 
-
-
-
     def get_area(self, valid=True, frac=1.):
         """
         calculate area
@@ -797,10 +768,6 @@ class GeoData(object):
             assert type(
                 self.cell_area) == np.ndarray, 'Only numpy arrays for cell_area supported at the moment for this function'
             return self.cell_area.sum()
-
-
-
-
 
     def distance(self, lon_deg, lat_deg, earth_radius=6371.):
         """
@@ -833,9 +800,6 @@ class GeoData(object):
         d = G.orthodrome(np.deg2rad(self.lon), np.deg2rad(self.lat),
                          np.deg2rad(lon_deg), np.deg2rad(lat_deg))
         return d
-
-
-
 
     def _apply_mask(self, msk1, keep_mask=True):
         """
@@ -922,9 +886,6 @@ class GeoData(object):
                 self._climatology_raw[i, :, :] = tmp[:, :]
                 del tmp
 
-
-
-
     def get_bounding_box(self):
         """
         estimates bounding box of valid data. It returns the indices
@@ -980,10 +941,6 @@ class GeoData(object):
                 i2 = i
         return i1, i2, j1, j2
 
-
-
-
-
     def _set_cell_area(self):
         """
         set cell area size. If a cell area was already given (either by user or from file)
@@ -1037,13 +994,15 @@ class GeoData(object):
                              input=self.filename)
             except:
                 # occurs if you dont have write permissions
-                print('   Seems that cell_area file can not be generated, try to generate in temporary directory')
+                print(
+                    '   Seems that cell_area file can not be generated, try to generate in temporary directory')
                 # generate some temporary filename
                 cell_file = tempfile.mktemp(prefix='cell_area_', suffix='.nc')
                 try:
                     cdo.gridarea(options='-f nc', output=cell_file,
                                  input=self.filename)
-                    print('   Cell area file generated sucessfully in temporary file: ' + cell_file)
+                    print(
+                        '   Cell area file generated sucessfully in temporary file: ' + cell_file)
                 except:
                     # not sucessfull so far ... last try here by selecting an
                     # alternative grid (if available)
@@ -1055,7 +1014,8 @@ class GeoData(object):
                     try:
                         cdo.gridarea(options='-f nc', output=cell_file,
                                      input='-selgrid,2 ' + self.filename)
-                        print('   Cell area file generated sucessfully in temporary file: ' + cell_file)
+                        print(
+                            '   Cell area file generated sucessfully in temporary file: ' + cell_file)
                     except:
                         try:
                             # store lat/lon coordinates in nc3 file and then
@@ -1113,7 +1073,6 @@ class GeoData(object):
             else:
                 print('actual geometry:  ', self.data.ndim, self.data.shape)
                 raise ValueError('Invalid geometry!')
-
 
     def get_percentile(self, p, return_object=True):
         """
@@ -1262,7 +1221,8 @@ class GeoData(object):
                     elif np.all(np.diff(self.lat[:, 0]) < 0.):
                         self._latitudecheckok = True
                     else:
-                        print('WARNING: latitudes not in systematic order! Might cause trouble with zonal statistics!')
+                        print(
+                            'WARNING: latitudes not in systematic order! Might cause trouble with zonal statistics!')
                         self._latitudecheckok = False
 
         # check if cell_area is already existing. if not,
@@ -1306,7 +1266,7 @@ class GeoData(object):
             d = t[6:8]
             h = t[8:]
             h = int(float(h) * 24.)
-            mi = str(int(((float(t[8:]) * 24. - h)*60.)))
+            mi = str(int(((float(t[8:]) * 24. - h) * 60.)))
             h = str(int(h))
             tn = y + '-' + m + '-' + d + ' ' + h + ':' + mi
 
@@ -1318,8 +1278,6 @@ class GeoData(object):
         self.time_str = 'days since 0001-01-01 00:00:00'
         # convert first to datetime object and then use own function !!!
         self.time = self.date2num(plt.num2date(plt.datestr2num(T)))
-
-
 
     def _convert_time_YYYYMMDD(self):
         """
@@ -1393,7 +1351,6 @@ class GeoData(object):
         The date is set to the first of January for each year
         """
 
-
         #~ assert False, 'This conversion is not thoroughly validated yet!'
         # problem is that due to the gregorian/julian calendar, 10 days are missing
         # that results in a 28 minute shift each day! This is not fixed yet!
@@ -1403,26 +1360,26 @@ class GeoData(object):
         frac = self.time - years
         #isleap = np.asarray(map(calendar.isleap, years))
         isleap = np.asarray([calendar.isleap(y) for y in years])
-        ndays = np.ones_like(years)*365.
+        ndays = np.ones_like(years) * 365.
         ndays[isleap] = 366.
-        days = ndays*frac
+        days = ndays * frac
         #~ print self.time[0:5]
         #~ print years[0:5]
         #~ print frac[0:5]*100000.
         #~ print days[0:5]
 
-        #fraction is too small ini the end ??? but CDOs do right ???
+        # fraction is too small ini the end ??? but CDOs do right ???
 
         T = []
         for i in range(len(years)):
 
-            d = datetime.datetime(int(years[i]),1,1)+relativedelta.relativedelta(days=days[i])
+            d = datetime.datetime(
+                int(years[i]), 1, 1) + relativedelta.relativedelta(days=days[i])
             T.append(d)
 
         self.calendar = 'gregorian'
         self.time_str = 'days since 0001-01-01 00:00:00'
         self.time = self.date2num(np.asarray(T))
-
 
     def _read_coordinates(self, shift_lon, netcdf_backend=None):
         """
@@ -1468,7 +1425,6 @@ class GeoData(object):
         if self.lat_name is None:
             self.lat_name = _get_default_name(F, lat_defaults)
 
-
         if self.lat_name is None:
             self.lat = None
         else:
@@ -1512,8 +1468,6 @@ class GeoData(object):
 
         if self.lat is None:
             print('*** WARNING!!! No coordinates available!')
-
-
 
     def get_zonal_mean(self, return_object=True):
         """
@@ -1574,7 +1528,6 @@ class GeoData(object):
             res = r
         return res
 
-
     def set_time(self):
         """
         convert times that are in a specific format
@@ -1612,8 +1565,6 @@ class GeoData(object):
             # to properly handle difference in different calendars.
         #~ elif 'years since' in self.time_str:
             #~ self._convert_yearly_timeseries()
-
-
 
     def apply_temporal_subsetting(self, start_date, stop_date):
         """
@@ -1668,7 +1619,6 @@ class GeoData(object):
             self.data = self.data[i1:i2]
         else:
             raise ValueError('Error temporal subsetting: invalid dimension!')
-
 
     def _get_time_indices(self, start, stop):
         """
@@ -1760,7 +1710,6 @@ class GeoData(object):
         else:
             pass
 
-
     def read_netcdf(self, varname, netcdf_backend='netCDF4', filename=None):
         """
         read data from netCDF file
@@ -1780,12 +1729,12 @@ class GeoData(object):
         print('Reading file %s' % filename)
         if not varname in File.get_variable_keys():
             self._log_warning(
-                    'WARNING: data can not be read. Variable not existing! ', varname)
+                'WARNING: data can not be read. Variable not existing! ', varname)
             print('VARNAME: ', varname)
             print('EXISTING VARS: ', File.get_variable_keys())
             File.close()
             return None
-            #print self.calendar
+            # print self.calendar
 
         try:
             data = File.get_variable(varname)
@@ -1933,7 +1882,6 @@ class GeoData(object):
         else:
             return res
 
-
     def timvar(self, return_object=True):
         """
         calculate temporal variance of data field
@@ -1992,7 +1940,6 @@ class GeoData(object):
         else:
             return res
 
-
     def timn(self, return_object=True):
         """
         calculate number of valid samples per time
@@ -2003,7 +1950,8 @@ class GeoData(object):
         return_object : bool
             return Data object
         """
-        res = self.timsum(return_object=False) / self.timmean(return_object=False)
+        res = self.timsum(return_object=False) / \
+            self.timmean(return_object=False)
 
         if return_object:
             if res is None:
@@ -2014,7 +1962,6 @@ class GeoData(object):
                 return tmp
         else:
             return res
-
 
     def timstd(self, return_object=True):
         """
@@ -2046,7 +1993,6 @@ class GeoData(object):
                 return tmp
         else:
             return res
-
 
     def timmin(self, return_object=True):
         """
@@ -2105,9 +2051,6 @@ class GeoData(object):
         else:
             return res
 
-
-
-
     def timcv(self, return_object=True):
         """
         calculate temporal coefficient of variation
@@ -2134,7 +2077,6 @@ class GeoData(object):
                 return tmp
         else:
             return res
-
 
     def timsort(self, return_object=True):
         """
@@ -2188,7 +2130,6 @@ class GeoData(object):
         if return_object:
             return x
 
-
     def adjust_time(self, day=None, month=None, year=None, hour=None):
         """
         correct all timestamps and assign same day and/or month
@@ -2233,7 +2174,6 @@ class GeoData(object):
 
         o = np.asarray(o)
         self.time = o.copy()
-
 
     def timeshift(self, n, return_data=False, shift_time=False):
         """
@@ -2293,7 +2233,6 @@ class GeoData(object):
             return res
         else:
             return None
-
 
     def _get_weighting_matrix(self):
         """
@@ -2432,7 +2371,8 @@ class GeoData(object):
                 x[:, :] = tmp[0]
             else:
                 raise ValueError('Undefined')
-            assert (isinstance(tmp, np.ma.masked_array)), 'ERROR: wrong data type: ' + str(type(tmp))
+            assert (isinstance(tmp, np.ma.masked_array)
+                    ), 'ERROR: wrong data type: ' + str(type(tmp))
             r = self.copy()
             r.data = np.ma.array(x.copy(),
                                  mask=tmp.mask)  # use mask of array tmp (important if all values are invalid!)
@@ -2588,7 +2528,6 @@ class GeoData(object):
             self.label = ''
         return self.label
 
-
     def get_valid_mask(self, frac=1., return_frac=False):
         """
         calculate a mask which is True, when a certain fraction of
@@ -2654,7 +2593,6 @@ class GeoData(object):
         else:
             raise ValueError('Unsupported dimension!')
 
-
     def _shift_lon_360(self):
         """
         shift longitude coordinates. Coordinates given as [-180...180] are
@@ -2665,7 +2603,6 @@ class GeoData(object):
         self.lon[self.lon < 0.] += 360.
         self._lon360 = True
         print('Longitudes were shifted to 0 ... 360!')
-
 
     def _set_valid_range(self, vmin, vmax):
         """
@@ -2764,7 +2701,6 @@ class GeoData(object):
             return lon, lat, data, msk
         else:
             return lon, lat, data
-
 
     def _save_netcdf(self, filename, varname=None, delete=False, compress=True, format='NETCDF4'):
         """
@@ -2886,8 +2822,6 @@ class GeoData(object):
 
         File.close()
 
-
-
     def normalize(self, return_object=True):
         """
         normalize data by removing the mean and dividing by the standard deviation
@@ -2914,11 +2848,6 @@ class GeoData(object):
             return d
         else:
             return None
-
-
-
-
-
 
     def temporal_smooth(self, N, return_object=True, frac=1.):
         """
@@ -2988,7 +2917,6 @@ class GeoData(object):
             return res
         else:
             return tmp
-
 
     def _sub_sample(self, step):
         """
@@ -3065,7 +2993,6 @@ class GeoData(object):
         d.label = self.label + ' + ' + x.label
         return d
 
-
     def sub(self, x, copy=True):
         """
         Substract a C{Data} object from the current object field
@@ -3103,7 +3030,6 @@ class GeoData(object):
             d.data = d.data - x.data
         d.label = self.label + ' - ' + x.label
         return d
-
 
     def subc(self, x, copy=True):
         """
@@ -3196,7 +3122,6 @@ class GeoData(object):
         d.data /= x
         return d
 
-
     def div(self, x, copy=True):
         """
         Divide current object field by field of a C{Data} object
@@ -3251,7 +3176,6 @@ class GeoData(object):
 
         return d
 
-
     def mul(self, x, copy=True):
         """
         Multiply current object field by field by a C{Data} object
@@ -3304,7 +3228,6 @@ class GeoData(object):
 
         d.label = self.label + ' * ' + x.label
         return d
-
 
     def corr_single(self, x, pthres=1.01, mask=None, method='pearson'):
         """
@@ -3378,14 +3301,14 @@ class GeoData(object):
             res = [stats.mstats.linregress(x, dat[:, i]) for i in range(n)]
             #~ res = np.ones(n)*np.nan
             #~ for i in xrange(n):
-                #~ try:
-                    #~ yy = stats.mstats.linregress(x, dat[:, i])
+            #~ try:
+            #~ yy = stats.mstats.linregress(x, dat[:, i])
 
-                #res[i] = stats.mstats.linregress(x, dat[:, i])
-                #~ except:
-                    #~ print x
-                    #~ print dat[:,i]
-                    #~ stop
+            #res[i] = stats.mstats.linregress(x, dat[:, i])
+            #~ except:
+            #~ print x
+            #~ print dat[:,i]
+            #~ stop
 
             res = np.asarray(res)
             slope = res[:, 0]
@@ -3481,8 +3404,6 @@ class GeoData(object):
 
         return Rout, Sout, Iout, Pout, Cout
 
-
-
     def _is_daily(self):
         """
         check if the timeseries is daily
@@ -3540,7 +3461,6 @@ class GeoData(object):
         unittest implemented
         """
         return np.all(np.diff(self.time) >= 0.)
-
 
     def mask_region(self, r, return_object=True, method='full', maskfile=None, force=False):
         """
@@ -3623,7 +3543,6 @@ class GeoData(object):
         else:
             return None
 
-
     def interp_time(self, d, method='linear'):
         """
         interpolate data matrix in time. The existing data is
@@ -3652,7 +3571,7 @@ class GeoData(object):
         # check if timezone information available. If not, then
         # set to UTC as default
         d = np.asarray([datetime.datetime(x.year, x.month, x.day, x.hour, x.minute, x.second, 0, pytz.UTC)
-                       for x in d])
+                        for x in d])
 
         if method not in ['linear']:
             raise ValueError(
@@ -3778,8 +3697,6 @@ class GeoData(object):
 
         return res
 
-
-
     def _shift_lon(self):
         """
         shift longitude coordinates. Coordinates given as [0...360] are
@@ -3820,7 +3737,6 @@ class GeoData(object):
         if hasattr(self, 'lat'):
             if self.lat is not None:
                 self.lat = self.lat[::-1, :]
-
 
     def mul_tvec(self, x, copy=True):
         """
@@ -3906,7 +3822,6 @@ class GeoData(object):
             mask[hlp] = True
         return np.array(mask)
 
-
     def _get_unique_lon(self):
         """
         estimate if the Data contains unique longitudes and if so,
@@ -3939,8 +3854,6 @@ class GeoData(object):
             raise ValueError(
                 'Data dimension for longitudes not supported yet!')
 
-
-
     def _shift_time_start_firstdate(self):
         """
         shift dataset that the timeseries is ensured to be in ascending order
@@ -3961,8 +3874,6 @@ class GeoData(object):
 
         # shift data now
         self.timeshift(n, shift_time=True)
-
-
 
     def get_deseasonalized_anomaly(self, base=None, ensure_start_first=True):
         """
@@ -4018,7 +3929,8 @@ class GeoData(object):
                     i::self.time_cycle, :] - clim[i, :]
         elif ret.ndim == 3:
             for i in range(self.time_cycle):
-                ret[i::self.time_cycle, :, :] = self.data[i::self.time_cycle, :, :] - clim[i, :, :]
+                ret[i::self.time_cycle, :,
+                    :] = self.data[i::self.time_cycle, :, :] - clim[i, :, :]
         else:
             raise ValueError('Invalid dimension when calculating anomalies')
         ret = np.ma.array(ret, mask=(np.isnan(ret) | self.data.mask))
@@ -4155,7 +4067,6 @@ class GeoData(object):
         else:
             return res
 
-
     def areasum(self, return_data=False, apply_weights=True):
         """
         calculate area weighted sum of the spatial field for each time using area weights
@@ -4237,10 +4148,6 @@ class GeoData(object):
         else:  # return numpy array
             return tmp
 
-
-
-
-
     def _apply_temporal_mask(self, mask):
         """
         apply a temporal mask to data. All timesteps where the mask is
@@ -4269,7 +4176,6 @@ class GeoData(object):
         for i in range(len(mask)):
             if mask[i]:
                 self.data.mask[i, :, :] = True
-
 
     def cut_bounding_box(self, return_object=False):
         """
@@ -4317,8 +4223,6 @@ class GeoData(object):
             return D
         else:
             return None
-
-
 
     def correlate(self, Y, pthres=1.01, spearman=False, detrend=False):
         """
@@ -4453,7 +4357,6 @@ class GeoData(object):
 
         return RO, PO
 
-
     def get_climatology(self, return_object=False, nmin=1, ensure_start_first=True):
         """
         calculate climatological mean for a time increment
@@ -4518,7 +4421,7 @@ class GeoData(object):
                            mask=(np.isnan(clim) | (n < nmin) |
                                  np.logical_not(
                                          (np.logical_not(self.data.mask)).
-                                          mean(axis=0))))
+                               mean(axis=0))))
         del slim  # number of data taken into account for climatology
         del n
 
@@ -4610,8 +4513,8 @@ class GeoData(object):
         clim = np.ma.array(clim,
                            mask=(np.isnan(clim) | (n < nmin) |
                                  np.logical_not(
-                                         (np.logical_not(self.data.mask)).
-                                          mean(axis=0))))
+                                     (np.logical_not(self.data.mask)).
+                                     mean(axis=0))))
         del slim  # number of data taken into account for climatology
         del n
 
@@ -4709,8 +4612,6 @@ class GeoData(object):
         """return the number of days per month in Data timeseries (unittest)"""
         return [float(calendar.monthrange(d.year, d.month)[1]) for d in self.date]
 
-
-
     def detrend(self, return_object=True):
         """
         detrend data timeseries by removing linear trend over time.
@@ -4767,9 +4668,6 @@ class GeoData(object):
             self.detrended = True
             return None
 
-
-
-
     def _equal_lon(self):
         """
         This routine identifies if all longitudes in the dataset
@@ -4794,8 +4692,6 @@ class GeoData(object):
                 return True
         else:
             raise ValueError('Unsupported geometry for longitude')
-
-
 
     def _init_sample_object(self, nt=None, ny=20, nx=10, gaps=False):
         """
@@ -4831,7 +4727,8 @@ class GeoData(object):
                 data = np.random.random((nt, ny, nx))
 
         if gaps:
-            self.data = np.ma.array(data, mask=data > 0.8)  # include some data gaps
+            # include some data gaps
+            self.data = np.ma.array(data, mask=data > 0.8)
         else:
             self.data = np.ma.array(data, mask=data != data)
         self.unit = 'myunit'
@@ -4852,7 +4749,6 @@ class GeoData(object):
             lat = np.linspace(-90., 90., ny)
             lon = np.linspace(-180., 180., nx)
             self.lon, self.lat = np.meshgrid(lon, lat)
-
 
     def save(self, filename, varname=None, format='nc',
              delete=False, mean=False, timmean=False, compress=True):
@@ -4923,7 +4819,6 @@ class GeoData(object):
         # self.time = plt.date2num(newtime) + 1.
         self.time = self.date2num(newtime)
 
-
     #~ def _convert_yearly_timeseries(self):
         #~ """
         #~ comnvert yearly timeseries, as the YEARS SINCE option
@@ -4939,8 +4834,8 @@ class GeoData(object):
         #~ basedate = datetime.datetime.strptime(basestr, fmt)  # datetime object
         #~ newtime = []
         #~ for i in xrange(len(self.time)):
-            #~ Y,M,D,h,m,s = self._split_time_float(self.time[i])
-            #~ newdate.append(basedate + relativedelta.relativedelta(years=Y,months=M,days=D,hours=h,minutes=m,seconds=s))
+        #~ Y,M,D,h,m,s = self._split_time_float(self.time[i])
+        #~ newdate.append(basedate + relativedelta.relativedelta(years=Y,months=M,days=D,hours=h,minutes=m,seconds=s))
 #~
         #~ self.calendar = 'standard'
         #~ self.time_str = 'days since 0001-01-01 00:00:00'
@@ -4954,7 +4849,7 @@ class GeoData(object):
         #~ Parameters
         #~ ----------
         #~ t : float
-            #~ scalar time indicator
+        #~ scalar time indicator
         #~ """
         #~ Y = int(t)
         #~ M = 0
@@ -4964,9 +4859,8 @@ class GeoData(object):
         #~ s = 0
         #~ return Y,M,D,h,m,s
 
-
-
-    def get_shape_statistics(self,regions): #written before geoval was implemented
+    # written before geoval was implemented
+    def get_shape_statistics(self, regions):
         """
         get statistical information for different polygons in shapefile
         Parameters
@@ -4974,19 +4868,19 @@ class GeoData(object):
         regions : masks for masked array
         """
 
-        self.regionalized=dict()
-        regname=regions.keys()
+        self.regionalized = dict()
+        regname = regions.keys()
 
         for s in np.arange(len(regions)):
-            loc_content=self.data.copy()
-            loc_content.mask=regions[regname[s]]
-            self.regionalized[regname[s]]=[np.nanmin(loc_content),
-                                            np.nanmean(loc_content),
-                                            np.nanmax(loc_content),
-                                            np.nanstd(loc_content)
-                                            ]
+            loc_content = self.data.copy()
+            loc_content.mask = regions[regname[s]]
+            self.regionalized[regname[s]] = [np.nanmin(loc_content),
+                                             np.nanmean(loc_content),
+                                             np.nanmax(loc_content),
+                                             np.nanstd(loc_content)
+                                             ]
 
-    def get_regions(self,shape,column=0): #written before geoval was implemented
+    def get_regions(self, shape, column=0):  # written before geoval was implemented
         """
         get setup for statistical information for different polygons in shapefile
         caution: slow for complex polygons
@@ -4995,45 +4889,46 @@ class GeoData(object):
         shape : shp.Reader (shapefile.Reader)
             information on areas from a classic ESRI shapefile
         """
-        assert isinstance(shape,shp.Reader)
+        assert isinstance(shape, shp.Reader)
 
-
-        def point_in_poly(point,poly):
+        def point_in_poly(point, poly):
             """ function to find points within polygon """
             n = len(poly)
             inside = False
 
-            p1x,p1y = poly[0]
-            for i in range(n+1):
-                p2x,p2y = poly[i % n]
-                if point[1] > min(p1y,p2y):
-                    if point[1] <= max(p1y,p2y):
-                        if point[0] <= max(p1x,p2x):
+            p1x, p1y = poly[0]
+            for i in range(n + 1):
+                p2x, p2y = poly[i % n]
+                if point[1] > min(p1y, p2y):
+                    if point[1] <= max(p1y, p2y):
+                        if point[0] <= max(p1x, p2x):
                             if p1y != p2y:
-                                xints = (point[1]-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
+                                xints = (point[1] - p1y) * \
+                                    (p2x - p1x) / (p2y - p1y) + p1x
                             if p1x == p2x or point[0] <= xints:
                                 inside = not inside
-                p1x,p1y = p2x,p2y
+                p1x, p1y = p2x, p2y
 
             return inside
 
-        regions=dict()
-        regname=np.array(shape.records())[:,column]
+        regions = dict()
+        regname = np.array(shape.records())[:, column]
 
         for s in np.arange(len(shape.shapes())):
             loc_poly = shape.shapes()[s].points
             if len(self.shape) == 3:
-                loc_mask=self.data[0,:,:].mask.copy()
+                loc_mask = self.data[0, :, :].mask.copy()
             elif len(self.shape) == 2:
-                loc_mask=self.data.mask.copy()
-            else :
+                loc_mask = self.data.mask.copy()
+            else:
                 assert False, "wrong data dimensions"
             for i in np.arange(self.shape[0] if len(self.shape) == 2 else self.shape[1]):
                 for j in np.arange(self.shape[1] if len(self.shape) == 2 else self.shape[2]):
-                    ll=[self.lon[i,j] if self.lon[i,j]<180 else self.lon[i,j]-180,self.lat[i,j]]
-                    loc_mask[i,j]=loc_mask[i,j] and not point_in_poly(ll,loc_poly)
+                    ll = [self.lon[i, j] if self.lon[i, j] <
+                          180 else self.lon[i, j] - 180, self.lat[i, j]]
+                    loc_mask[i, j] = loc_mask[i,
+                                              j] and not point_in_poly(ll, loc_poly)
 
-
-            regions[regname[s]]=loc_mask
+            regions[regname[s]] = loc_mask
 
         return regions
